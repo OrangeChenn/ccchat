@@ -15,7 +15,7 @@ LogicSystem::LogicSystem() {
     });
 
     regPost("/get_varifycode", [](std::shared_ptr<HttpConnection> con) {
-        auto body_str = beast::buffers_to_string(con->m_response.body().data());
+        auto body_str = beast::buffers_to_string(con->m_request.body().data());
         std::cout << "receive body is " << body_str << std::endl;
         con->m_response.set(http::field::content_type, "text/json");
         Json::Value root;
@@ -51,6 +51,7 @@ bool LogicSystem::handlerPost(const std::string& path, std::shared_ptr<HttpConne
         return false;
     }
     m_post_handlers[path](con);
+    return true;
 }
 
 // 注册get处理函数

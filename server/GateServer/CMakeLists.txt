@@ -15,6 +15,7 @@ set(SRCS
 include_directories(. src)
 
 set(LIBS 
+    pthread
     jsoncpp    
 )
 
