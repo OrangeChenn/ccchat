@@ -120,7 +120,8 @@ void HttpConnection::handleReq() {
 		// writeResponse();
 	}
 	if(m_request.method() == http::verb::post) {
-		success = LogicSystem::GetInstance()->handlerPost(m_request.target().to_string(), shared_from_this());
+		success = LogicSystem::GetInstance()->handlerPost(m_request.target(), shared_from_this());
+		// success = LogicSystem::GetInstance()->handlerPost(m_request.target().to_string(), shared_from_this());
 	}
 	if(!success) {
 		m_response.result(http::status::not_found);
@@ -134,7 +135,8 @@ void HttpConnection::handleReq() {
 }
 
 void HttpConnection::preParseGetParam() {
-	std::string uri = m_request.target().to_string();
+	std::string uri = m_request.target();
+	/// std::string uri = m_request.target().to_string();
 	auto query_pos = uri.find('?');
 	if(query_pos == std::string::npos) {
 		m_get_url = uri;
