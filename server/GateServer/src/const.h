@@ -21,4 +21,7 @@ enum ErrorCodes {
     RPCFailed = 1002,   // RPC请求错误
 };
 
+class ConfigMgr;
+extern ConfigMgr config_mgr;
+
 #endif // __CONST_H__

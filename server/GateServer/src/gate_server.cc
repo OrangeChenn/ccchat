@@ -17,6 +17,8 @@ void GateServer::start() {
 				self->start();
 				return;
 			}
+			tcp::endpoint peer_ep = self->m_socket.remote_endpoint();
+			std::cout << "New connection ip: " << peer_ep.address().to_string() << std::endl;
 			// 创建新连接，并且创建HttpConnection类管理这个连接
 			std::make_shared<HttpConnection>(std::move(self->m_socket))->start();
 			self->start();

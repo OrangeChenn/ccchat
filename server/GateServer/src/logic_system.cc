@@ -1,5 +1,6 @@
 #include "logic_system.h"
 #include "http_connection.h"
+#include "varify_grpc_client.h"
 
 LogicSystem::~LogicSystem() {}
 
@@ -31,7 +32,9 @@ LogicSystem::LogicSystem() {
         }
         std::string email = str_root["email"].asString();
         std::cout << "email is " << email << std::endl;
-        root["error"] = 0;
+        message::GetVarifyRsp response = VarifyGrpcClient::GetInstance()->getVarifyCode(email);
+        root["error"] = response.error();
+        // root["error"] = ErrorCodes::Error_Json;
         root["email"] = str_root["email"];
         std::string jsonstr = root.toStyledString();
         beast::ostream(con->m_response.body()) << jsonstr;
