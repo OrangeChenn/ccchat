@@ -1,3 +1,9 @@
+const grpc = require('@grpc/grpc-js')
+const message_proto = require('./proto')
+const const_module = require('./const')
+const { v4: uuidv4 } = require('uuid')
+const emailModule = require('./email')
+
 async function GetVarifyCode(call, callback) {
     console.log("email is ", call.request.email)
     try{
@@ -6,7 +12,7 @@ async function GetVarifyCode(call, callback) {
         let text_str =  '您的验证码为'+ uniqueId +'请三分钟内完成注册'
         //发送邮件
         let mailOptions = {
-            from: 'secondtonone1@163.com',
+            from: '834927895@qq.com',
             to: call.request.email,
             subject: '验证码',
             text: text_str,

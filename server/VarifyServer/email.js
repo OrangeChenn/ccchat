@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer')
 const config_module = require('./config')
 
 let transport = nodemailer.createTransport({
-    host: 'smtp.163.com',
+    host: 'smtp.qq.com',
     port: 465,
     secure: true,
     auth: {

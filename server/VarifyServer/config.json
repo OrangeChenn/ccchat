@@ -1,6 +1,14 @@
 {
     "email": {
       "user": "834927895@qq.com",
-      "pass": "xcpcwsemqhulbead"
+      "pass": "uqdwimyhlfhxbefe"
+    },
+    "mysql": {
+      "user": "",
+      "pass": ""
+    },
+    "redis": {
+      "user": "",
+      "pass": ""
     }
 }
