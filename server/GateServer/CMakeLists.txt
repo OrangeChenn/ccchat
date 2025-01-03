@@ -4,6 +4,7 @@ project(GateServer LANGUAGES CXX)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O0 -ggdb -std=c++17 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined")
 
 find_package(Threads REQUIRED)
 set(protobuf_MODULE_COMPATIBLE TRUE)
@@ -23,6 +24,7 @@ file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
 set(LIBS 
     jsoncpp
     boost_filesystem
+    hiredis
     ${_REFLECTION}
     ${_GRPC_GRPCPP}
     ${_PROTOBUF_LIBPROTOBUF}
@@ -31,5 +33,12 @@ set(LIBS
 
 add_executable(GateServer ${SOURCES})
 target_link_libraries(GateServer ${LIBS})
+
+set(TEST_SRCS
+    test/test_hiredis.cc
+    src/redis_mgr.cc
+    )
+add_executable(test_redis_mgr ${TEST_SRCS})
+target_link_libraries(test_redis_mgr hiredis)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

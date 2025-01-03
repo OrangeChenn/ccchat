@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv)
 {
-    ConfigMgr config_mgr;
+    ConfigMgr& config_mgr = ConfigMgr::Inst();
     unsigned short gate_port = atoi(config_mgr["GateServer"]["Port"].c_str());
     std::cout << "gate_prot = " << gate_port << std::endl; 
     try {

@@ -5,6 +5,11 @@
 #include <boost/filesystem.hpp>
 #include <iostream>
 
+ConfigMgr& ConfigMgr::Inst() {
+    static ConfigMgr cfg_mgr;
+    return cfg_mgr;
+}
+
 ConfigMgr::ConfigMgr() {
     boost::filesystem::path current_path = boost::filesystem::current_path();
     boost::filesystem::path config_path = current_path / "config.ini";

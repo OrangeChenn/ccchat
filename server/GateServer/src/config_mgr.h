@@ -41,14 +41,15 @@ struct SectionInfo {
 
 class ConfigMgr {
 public:
-    ConfigMgr();
     ConfigMgr(const ConfigMgr& config_mgr);
     ~ConfigMgr();
     ConfigMgr& operator=(const ConfigMgr& config_mgr);
     SectionInfo operator[](const std::string& key);
     SectionInfo getValue(const std::string& key);
     
+    static ConfigMgr& Inst();
 private:
+    ConfigMgr();
     std::map<std::string, SectionInfo> m_config_map;
 };
 

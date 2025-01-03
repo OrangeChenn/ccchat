@@ -2,6 +2,8 @@
 #define __SINGLETON_H__
 
 #include <memory>
+#include <mutex>
+#include <iostream>
 
 template <class T>
 class Singleton {
