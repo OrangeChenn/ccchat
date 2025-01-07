@@ -65,7 +65,8 @@ void RPCPool::close() {
 VarifyGrpcClient::VarifyGrpcClient() {
     auto& cfg_mgr = ConfigMgr::Inst();
     std::string host = cfg_mgr["VarifyServer"]["Host"];
-    std::string port = cfg_mgr["VarifyServer"]["Post"];
+    std::string port = cfg_mgr["VarifyServer"]["Port"];
+    std::cout << "host: " << host << ", port: " << port << std::endl; 
     m_pool.reset(new RPCPool(5, host, port));
 }
 

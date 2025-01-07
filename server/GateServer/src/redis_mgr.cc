@@ -18,7 +18,7 @@ RedisConPool::RedisConPool(size_t pool_size, const char* host, int port, const c
             }
             continue;
         }
-        redisReply* reply = (redisReply*)(context, "AUTH %s", passwd);
+        redisReply* reply = (redisReply*)redisCommand(context, "AUTH %s", passwd);
         if(reply->type == REDIS_REPLY_ERROR) {
             std::cout << "认证失败" << std::endl;
             freeReplyObject(reply);

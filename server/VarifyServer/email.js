@@ -1,5 +1,5 @@
-const nodemailer = require('nodemailer')
-const config_module = require('./config')
+const nodemailer = require('nodemailer');
+const config_module = require('./config');
 
 let transport = nodemailer.createTransport({
     host: 'smtp.qq.com',

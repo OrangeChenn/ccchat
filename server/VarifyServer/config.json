@@ -4,11 +4,13 @@
       "pass": "uqdwimyhlfhxbefe"
     },
     "mysql": {
-      "user": "",
-      "pass": ""
+      "host": "",
+      "port": "",
+      "passwd": 123455
     },
     "redis": {
-      "user": "",
-      "pass": ""
+      "host": "127.0.0.1",
+      "port": "6379",
+      "passwd": 123456
     }
 }

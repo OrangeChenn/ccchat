@@ -61,7 +61,7 @@ std::string urlDecode(const std::string& str) {
 /***********************************************
 	HttpConnection
 ***********************************************/
-HttpConnection::HttpConnection(tcp::socket socket) : m_socket(std::move(socket)){
+HttpConnection::HttpConnection(boost::asio::io_context& ioc) : m_socket(ioc) {
 
 }
 
@@ -71,7 +71,7 @@ void HttpConnection::start() {
 												std::size_t bytes_transferred) {
 		try {
 			if (ec) {
-				std::cout << "http read err is " << ec.value() << std::endl;
+				std::cout << "http read err is " << ec.value() << ", message: " << ec.message() << std::endl;
 				return;
 			}
 			boost::ignore_unused(bytes_transferred);
@@ -82,6 +82,10 @@ void HttpConnection::start() {
 			std::cout << "exception is " << exp.what() << std::endl;
 		}
 	});
+}
+
+tcp::socket& HttpConnection::getSocket() {
+	return m_socket;
 }
 
 void HttpConnection::checkDeadline() {

@@ -8,13 +8,15 @@ class HttpConnection : public std::enable_shared_from_this<HttpConnection>
 {
 public:
 	friend class LogicSystem;
-	HttpConnection(tcp::socket socket);
+	HttpConnection(boost::asio::io_context& ioc);
 	void start();
+	tcp::socket& getSocket();
 private:
 	void checkDeadline();
 	void writeResponse();
 	void handleReq();
 	void preParseGetParam();
+	
 	std::string m_get_url;
 	std::unordered_map<std::string, std::string> m_get_params;
 	tcp::socket m_socket;

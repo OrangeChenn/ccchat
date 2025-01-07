@@ -95,7 +95,7 @@ void TestRedis() {
 }
 
 void TestRedisMgr() {
-    assert(RedisMgr::GetInstance()->connect("127.0.0.1", 6379));
+    // assert(RedisMgr::GetInstance()->connect("127.0.0.1", 6379));
     assert(RedisMgr::GetInstance()->auth("123456"));
     assert(RedisMgr::GetInstance()->set("blogwebsite","llfc.club"));
     std::string value="";

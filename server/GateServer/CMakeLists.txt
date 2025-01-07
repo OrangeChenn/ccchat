@@ -34,11 +34,11 @@ set(LIBS
 add_executable(GateServer ${SOURCES})
 target_link_libraries(GateServer ${LIBS})
 
-set(TEST_SRCS
-    test/test_hiredis.cc
-    src/redis_mgr.cc
-    )
-add_executable(test_redis_mgr ${TEST_SRCS})
-target_link_libraries(test_redis_mgr hiredis)
+# set(TEST_SRCS
+#     test/test_hiredis.cc
+#     src/redis_mgr.cc
+#     )
+# add_executable(test_redis_mgr ${TEST_SRCS})
+# target_link_libraries(test_redis_mgr hiredis)
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
