@@ -17,8 +17,12 @@ using tcp = net::ip::tcp;
 
 enum ErrorCodes {
     Success = 0,
-    Error_Json = 1001,  // Json错误码
+    ErrorJson = 1001,  // Json错误码
     RPCFailed = 1002,   // RPC请求错误
+    VarifyExpired = 1003, // 验证码超时
+    VarifyCodeErr = 1004,
+    UserExists = 1005,
+    PasswdErr = 1006,
 };
 
 #endif // __CONST_H__
