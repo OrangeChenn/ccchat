@@ -38,6 +38,8 @@ public:
     MysqlDao();
     ~MysqlDao();
     int regUser(const std::string& name, const std::string& email, const std::string& passwd);
+    bool checkEmailAndUser(const std::string& email, const std::string& name);
+    bool updatePasswd(const std::string& name, const std::string& passwd);
 private:
     std::unique_ptr<MysqlPool> m_pool;
 };

@@ -23,6 +23,10 @@ enum ErrorCodes {
     VARIFY_CODE_ERR = 1004,
     USER_EXISTS = 1005,
     PASSWD_ERROR = 1006,
+    EMAIL_NOT_MATCH = 1007,
+    PASSWD_UPDATE_ERROR = 1008,
 };
+
+const std::string CODEPREFIX = "code_";
 
 #endif // __CONST_H__

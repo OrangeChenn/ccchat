@@ -7,6 +7,7 @@
 LogicSystem::~LogicSystem() {}
 
 LogicSystem::LogicSystem() {
+    // GET请求测试
     regGet("/get_test", [](std::shared_ptr<HttpConnection> con) {
         beast::ostream(con->m_response.body()) << "receive get_test req" << std::endl;
         int i = 0;
@@ -47,6 +48,7 @@ LogicSystem::LogicSystem() {
     regPost("/user_register", [](std::shared_ptr<HttpConnection> con) {
         auto body_str = beast::buffers_to_string(con->m_request.body().data());
         std::cout << "receive body is " << body_str << std::endl;
+        con->m_response.set(http::field::content_type, "text/json");
         Json::Value root; // 回复client
         Json::Reader reader;
         Json::Value src_root; // 解析请求
@@ -73,7 +75,7 @@ LogicSystem::LogicSystem() {
 
         // 判断验证码是否合理
         std::string varify_code;
-        bool b_get_varify = RedisMgr::GetInstance()->get("code_" + src_root["email"].asString(), varify_code);
+        bool b_get_varify = RedisMgr::GetInstance()->get(CODEPREFIX + src_root["email"].asString(), varify_code);
         if(!b_get_varify) {
             std::cout << "get varify code expired" << std::endl;
             root["error"] = ErrorCodes::VARIFY_EXPIRED;
@@ -120,8 +122,74 @@ LogicSystem::LogicSystem() {
         beast::ostream(con->m_response.body()) << jsonstr;
     });
 
+    // 重置密码
     regPost("/reset_pwd", [](std::shared_ptr<HttpConnection> con)  {
+        std::string body_str = beast::buffers_to_string(con->m_request.body().data());
+        std::cout << "receive body is " << body_str << std::endl;
+        Json::Value root;
+        Json::Reader reader;
+        Json::Value src_root;
 
+        // 解析json
+        bool parse_success = reader.parse(body_str, src_root);
+        if(!parse_success) {
+            std::cout << "Failed to parse JSON" << std::endl;
+            root["error"] = ErrorCodes::JSON_ERROR;
+            std::string json_str = root.toStyledString();
+            beast::ostream(con->m_response.body()) << json_str;
+            return;
+        }
+
+        std::string name = src_root["user"].asString();
+        std::string email = src_root["email"].asString();
+        std::string passwd = src_root["passwd"].asString();
+        std::string varifycode= src_root["varifycode"].asString();
+        
+        // 判断验证码是否存在或过期
+        std::string varify = "";
+        bool b_get_varify = RedisMgr::GetInstance()->get(CODEPREFIX + src_root["email"].asString(), varify);
+        if(!b_get_varify) {
+            std::cout << "varify expired" << std::endl;
+            root["error"] = ErrorCodes::VARIFY_EXPIRED;
+            std::string json_str = root.toStyledString();
+            beast::ostream(con->m_response.body()) << json_str;
+            return;
+        }
+
+        // 判断验证码是否正确
+        if(varify != varifycode) {
+            std::cout << "varify error" << std::endl;
+            root["error"] = ErrorCodes::VARIFY_CODE_ERR;
+            beast::ostream(con->m_response.body()) << root.toStyledString();
+            return;
+        }
+
+        // 判断用户名和邮箱是否匹配
+        bool email_valid = MysqlMgr::GetInstance()->checkEmailAndUser(email, name);
+        if(!email_valid) {
+            std::cout << "user name and email not match" << std::endl;
+            root["error"] = ErrorCodes::EMAIL_NOT_MATCH;
+            beast::ostream(con->m_response.body()) << root.toStyledString();
+            return;
+        }
+
+        // 更新密码
+        bool update_success = MysqlMgr::GetInstance()->updatePasswd(name, passwd);
+        if(!update_success) {
+            std::cout << "update passwd error" << std::endl;
+            root["error"] = ErrorCodes::PASSWD_UPDATE_ERROR;
+            beast::ostream(con->m_response.body()) << root.toStyledString();
+            return;
+        }
+
+        // 更新成功
+        std::cout << "update passwd success" << std::endl;
+        root["error"] = ErrorCodes::Success;
+        root["user"] = name;
+        root["email"] = email;
+        root["passwd"] = passwd;
+        root["varifycode"] = varifycode;
+        beast::ostream(con->m_response.body()) << root.toStyledString();
     });
 }
 
