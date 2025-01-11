@@ -28,7 +28,7 @@ LogicSystem::LogicSystem() {
         bool parse_success = reader.parse(body_str, src_root);
         if(!parse_success) {
             std::cout << "failed to parse JSON data!" << std::endl;
-            root["error"] = ErrorCodes::ErrorJson;
+            root["error"] = ErrorCodes::JSON_ERROR;
             std::string jsonstr = root.toStyledString();
             beast::ostream(con->m_response.body()) << jsonstr;
             return;
@@ -53,7 +53,7 @@ LogicSystem::LogicSystem() {
         bool parse_success = reader.parse(body_str, src_root);
         if(!parse_success) {
             std::cout << "Failed to parse JSON data! " << std::endl;
-            root["error"] = ErrorCodes::ErrorJson;
+            root["error"] = ErrorCodes::JSON_ERROR;
             std::string jsonstr = root.toStyledString();
             beast::ostream(con->m_response.body()) << jsonstr;
             return;
@@ -65,7 +65,7 @@ LogicSystem::LogicSystem() {
         auto confirm = src_root["confirm"].asString();
         if(passwd != confirm) {
             std::cout << "password err " << std::endl;
-            root["error"] = ErrorCodes::PasswdErr;
+            root["error"] = ErrorCodes::PASSWD_ERROR;
             std::string jsonstr = root.toStyledString();
             beast::ostream(con->m_response.body()) << jsonstr;
             return;
@@ -76,7 +76,7 @@ LogicSystem::LogicSystem() {
         bool b_get_varify = RedisMgr::GetInstance()->get("code_" + src_root["email"].asString(), varify_code);
         if(!b_get_varify) {
             std::cout << "get varify code expired" << std::endl;
-            root["error"] = ErrorCodes::VarifyExpired;
+            root["error"] = ErrorCodes::VARIFY_EXPIRED;
             std::string jsonstr = root.toStyledString();
             beast::ostream(con->m_response.body()) << jsonstr;
             return;
@@ -84,7 +84,7 @@ LogicSystem::LogicSystem() {
 
         if(varify_code != src_root["varifycode"].asString()) {
             std::cout << "varify code error" << std::endl;
-            root["error"] = ErrorCodes::VarifyCodeErr;
+            root["error"] = ErrorCodes::VARIFY_CODE_ERR;
             std::string jsonstr = root.toStyledString();
             beast::ostream(con->m_response.body()) << jsonstr;
             return;
@@ -93,7 +93,7 @@ LogicSystem::LogicSystem() {
         // bool b_user_exist = RedisMgr::GetInstance()->existsKey(src_root["user"].asString());
         // if(b_user_exist) {
         //     std::cout << "user exist" << std::endl;
-        //     root["error"] = ErrorCodes::UserExists;
+        //     root["error"] = ErrorCodes::USER_EXISTS;
         //     std::string jsonstr = root.toStyledString();
         //     beast::ostream(con->m_response.body()) << jsonstr;
         //     return;
@@ -103,7 +103,7 @@ LogicSystem::LogicSystem() {
         int uid = MysqlMgr::GetInstance()->regUser(name, email, passwd);
         if(uid == 0 || uid == -1) {
             std::cout << "user or email exist" << std::endl;
-            root["error"] = ErrorCodes::UserExists;
+            root["error"] = ErrorCodes::USER_EXISTS;
             std::string jsonstr = root.toStyledString();
             beast::ostream(con->m_response.body()) << jsonstr;
             return;
@@ -118,6 +118,10 @@ LogicSystem::LogicSystem() {
         root["varifycode"] = src_root["varifycode"].asString();
         std::string jsonstr = root.toStyledString();
         beast::ostream(con->m_response.body()) << jsonstr;
+    });
+
+    regPost("/reset_pwd", [](std::shared_ptr<HttpConnection> con)  {
+
     });
 }
 
