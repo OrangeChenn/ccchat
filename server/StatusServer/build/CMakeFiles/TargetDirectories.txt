@@ -1,0 +1,3 @@
+/home/chen/Code/cpp/ccchat/server/StatusServer/build/CMakeFiles/StatusServer.dir
+/home/chen/Code/cpp/ccchat/server/StatusServer/build/CMakeFiles/edit_cache.dir
+/home/chen/Code/cpp/ccchat/server/StatusServer/build/CMakeFiles/rebuild_cache.dir
