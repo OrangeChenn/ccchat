@@ -33,12 +33,21 @@ private:
     std::atomic<bool> m_stop;
 };
 
+struct UserInfo {
+    std::string email;
+    std::string name;
+    std::string passwd;
+    int uid;
+};
+
 class MysqlDao {
 public:
     MysqlDao();
     ~MysqlDao();
     int regUser(const std::string& name, const std::string& email, const std::string& passwd);
     bool checkEmailAndUser(const std::string& email, const std::string& name);
+    bool checkPasswdByEmail(const std::string& email, const std::string& passwd, UserInfo& user_info);
+    bool checkPasswdByName(const std::string& name, const std::string& passwd, UserInfo& user_info);
     bool updatePasswd(const std::string& name, const std::string& passwd);
 private:
     std::unique_ptr<MysqlPool> m_pool;

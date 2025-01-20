@@ -16,7 +16,7 @@ namespace net = boost::asio;
 using tcp = net::ip::tcp;
 
 enum ErrorCodes {
-    Success = 0,
+    SUCCESS = 0,
     JSON_ERROR = 1001,  // Json错误码
     RPC_FAILED = 1002,   // RPC请求错误
     VARIFY_EXPIRED = 1003, // 验证码超时
@@ -25,6 +25,7 @@ enum ErrorCodes {
     PASSWD_ERROR = 1006,
     EMAIL_NOT_MATCH = 1007,
     PASSWD_UPDATE_ERROR = 1008,
+    PASSWD_INVALID = 1009,
 };
 
 const std::string CODEPREFIX = "code_";

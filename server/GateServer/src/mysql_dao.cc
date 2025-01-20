@@ -129,6 +129,74 @@ bool MysqlDao::checkEmailAndUser(const std::string& email, const std::string& na
     }
 }
 
+bool MysqlDao::checkPasswdByEmail(const std::string& email, const std::string& passwd, UserInfo& user_info) {
+    std::unique_ptr<sql::Connection> con = m_pool->getConnection();
+    if(nullptr == con) {
+        return false;
+    }
+    
+    // TODO 实现Defer类 归还con
+
+    try {
+        std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement("SELECT * FROM user WHERE email = ?"));
+        pstmt->setString(1, email);
+        std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+        std::string origin_pwd = "";
+        while(res->next()) {
+            origin_pwd = res->getString("passwd");
+            std::cout << "passwd: "  << origin_pwd << std::endl;
+            break;
+        }
+        if(passwd != origin_pwd) {
+            return false;
+        }
+        user_info.email = email;
+        user_info.name = res->getString("name");
+        user_info.uid = res->getInt("uid");
+        user_info.passwd = origin_pwd;
+        return true;
+    } catch(const sql::SQLException& e) {
+        std::cerr << "SQLException: " << e.what();
+        std::cerr << " (MySQL error code: " << e.getErrorCode();
+        std::cerr << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        return false;
+    }
+}
+
+bool MysqlDao::checkPasswdByName(const std::string& name, const std::string& passwd, UserInfo& user_info) {
+    std::unique_ptr<sql::Connection> con = m_pool->getConnection();
+    if(nullptr == con) {
+        return false;
+    }
+    // TODO
+
+    try {
+        std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement("SELECT * FROM user WHERE name = ?"));
+        pstmt->setString(1, name);
+        std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+        std::string origin_pwd = "";
+        while(res->next()) {
+            origin_pwd = res->getString("passwd");
+            std::cout << "passwd: " << origin_pwd << std::endl;
+            break;
+        }
+        if(passwd != origin_pwd) {
+            return false;
+        }
+        
+        user_info.email = res->getString("email");
+        user_info.name = name;
+        user_info.passwd = origin_pwd;
+        user_info.uid = res->getInt("uid");
+        return true;
+    } catch(const sql::SQLException& e) {
+        std::cerr << "SQLException: " << e.what();
+        std::cerr << " (MySQL error code: " << e.getErrorCode();
+        std::cerr << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        return false;
+    }
+}
+
 bool MysqlDao::updatePasswd(const std::string& name, const std::string& passwd) {
     std::unique_ptr<sql::Connection> con = m_pool->getConnection();
     try {

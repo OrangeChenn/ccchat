@@ -2,6 +2,7 @@
 #include "http_connection.h"
 #include "varify_grpc_client.h"
 #include "redis_mgr.h"
+#include "status_grpc_client.h"
 #include "mysql_mgr.h"
 
 LogicSystem::~LogicSystem() {}
@@ -184,11 +185,103 @@ LogicSystem::LogicSystem() {
 
         // 更新成功
         std::cout << "update passwd success" << std::endl;
-        root["error"] = ErrorCodes::Success;
+        root["error"] = ErrorCodes::SUCCESS;
         root["user"] = name;
         root["email"] = email;
         root["passwd"] = passwd;
         root["varifycode"] = varifycode;
+        beast::ostream(con->m_response.body()) << root.toStyledString();
+    });
+
+    // 用户登录逻辑（用户名登录）
+    regPost("/user_login", [](std::shared_ptr<HttpConnection> con) {
+        auto body_str = beast::buffers_to_string(con->m_request.body().data());
+        std::cout << "recive body: " << body_str << std::endl;
+        con->m_response.set(http::field::content_type, "type/json");
+        
+        Json::Value root_src;
+        Json::Reader reader;
+        Json::Value root;
+        // 解析请求JSON
+        bool parse_success = reader.parse(body_str, root_src);
+        if(!parse_success) {
+            std::cout << "Failed to parse JSON data" << std::endl; 
+            root["error"] = ErrorCodes::JSON_ERROR;
+            beast::ostream(con->m_response.body()) << root.toStyledString();
+            return;
+        }
+
+        // 判断用户名与密码是否正确
+        std::string name = root_src["user"].asString();
+        std::string passwd = root_src["passwd"].asString();
+        UserInfo user_info;
+        bool passwd_valid = MysqlMgr::GetInstance()->checkPasswdByName(name, passwd, user_info);
+        if(!passwd_valid) {
+            std::cout << "user passwd not match" << std::endl;
+            root["error"] = ErrorCodes::PASSWD_INVALID;
+            beast::ostream(con->m_response.body()) << root.toStyledString();
+            return;
+        }
+
+        // 查询StatusServer分配到合适的ChatServer连接信息
+        auto reply = StatusGrpcClient::GetInstance()->GetChatServer(user_info.uid);
+        if(reply.error()) {
+            std::cout << "grpc get chat server failed, error is: " << reply.error() << std::endl;
+            root["error"] = ErrorCodes::RPC_FAILED;
+            beast::ostream(con->m_response.body()) << root.toStyledString();
+            return;
+        }
+        std::cout << "succeed to load userinfo uid is: " << user_info.uid << std::endl;
+        root["error"] = ErrorCodes::SUCCESS;
+        root["user"] = name;
+        root["uid"] = user_info.uid;
+        root["token"] = reply.token();
+        root["host"] = reply.host();
+        beast::ostream(con->m_response.body()) << root.toStyledString();
+    });
+
+    // 用户登录逻辑（邮箱登录）
+    regPost("/email_login", [](std::shared_ptr<HttpConnection> con) {
+        auto body_str = beast::buffers_to_string(con->m_request.body().data());
+        std::cout << "recive body: " << body_str << std::endl;
+        con->m_response.set(http::field::content_type, "type/json");
+
+        // 解析JSON数据
+        Json::Value root_src;
+        Json::Value root;
+        Json::Reader reader;
+        bool parse_success = reader.parse(body_str, root_src);
+        if(!parse_success) {
+            std::cout << "Failed to parse JSON body data" << std::endl;
+            root["error"] = ErrorCodes::JSON_ERROR;
+            beast::ostream(con->m_response.body()) << root.toStyledString();
+        }
+
+        // 判断邮箱与密码是否正确
+        std::string email = root_src["emial"].asString();
+        std::string passwd = root_src["passwd"].asString();
+        UserInfo user_info;
+        bool passwd_valid = MysqlMgr::GetInstance()->checkPasswdByEmail(email, passwd, user_info);
+        if(!passwd_valid) {
+            std::cout << "email passwd not match" << std::endl;
+            root["error"] = ErrorCodes::PASSWD_INVALID;
+            beast::ostream(con->m_response.body()) << root.toStyledString();
+        }
+
+        // 分配ChatServer
+        message::GetChatServerRsp reply = StatusGrpcClient::GetInstance()->GetChatServer(user_info.uid);
+        if(reply.error()) {
+            std::cout << "grpc get chat server failed, error is: " << reply.error() << std::endl;
+            root["error"] = ErrorCodes::RPC_FAILED;
+            beast::ostream(con->m_response.body()) << root.toStyledString();
+        }
+
+        std::cout << "succeed to load userinfo uid is: " << user_info.uid << std::endl;
+        root["error"] = ErrorCodes::SUCCESS;
+        root["emial"] = email;
+        root["uid"] = user_info.uid;
+        root["token"] = reply.token();
+        root["host"] = reply.host();
         beast::ostream(con->m_response.body()) << root.toStyledString();
     });
 }
