@@ -1,5 +1,6 @@
 #include "mysql_dao.h"
 #include <iostream>
+#include "const.h"
 #include "config_mgr.h"
 
 MysqlPool::MysqlPool(const std::string& url, const std::string& user,
@@ -136,6 +137,9 @@ bool MysqlDao::checkPasswdByEmail(const std::string& email, const std::string& p
     }
     
     // TODO 实现Defer类 归还con
+    Defer defer([&, this]() {
+        m_pool->returnConnection(std::move(con));
+    });
 
     try {
         std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement("SELECT * FROM user WHERE email = ?"));
@@ -168,7 +172,10 @@ bool MysqlDao::checkPasswdByName(const std::string& name, const std::string& pas
     if(nullptr == con) {
         return false;
     }
-    // TODO
+
+    Defer defer([&, this]() {
+        m_pool->returnConnection(std::move(con));
+    });
 
     try {
         std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement("SELECT * FROM user WHERE name = ?"));

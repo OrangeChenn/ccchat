@@ -6,6 +6,7 @@
 #include <boost/asio.hpp>
 #include <iostream>
 #include <memory>
+#include <functional>
 #include <json/json.h>
 #include <json/value.h>
 #include <json/reader.h>
@@ -26,6 +27,16 @@ enum ErrorCodes {
     EMAIL_NOT_MATCH = 1007,
     PASSWD_UPDATE_ERROR = 1008,
     PASSWD_INVALID = 1009,
+};
+
+class Defer {
+public:
+    Defer(std::function<void()> func) : m_func(func) {}
+    ~Defer() {
+        m_func();
+    }
+private:
+    std::function<void()> m_func;
 };
 
 const std::string CODEPREFIX = "code_";
