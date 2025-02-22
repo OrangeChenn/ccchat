@@ -1,4 +1,4 @@
-*/build/
-*/bin/
+build/
+bin/
 !*/bin/config.ini
 .vscode/
