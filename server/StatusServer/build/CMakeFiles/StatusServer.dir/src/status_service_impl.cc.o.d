@@ -2178,4 +2178,9 @@ CMakeFiles/StatusServer.dir/src/status_service_impl.cc.o: \
  /usr/include/c++/13/bits/stl_deque.h /usr/include/c++/13/bits/deque.tcc \
  /usr/include/c++/13/stack /usr/include/c++/13/bits/stl_stack.h \
  /usr/include/json/writer.h /usr/include/json/value.h \
- /usr/include/json/reader.h
+ /usr/include/json/reader.h \
+ /home/chen/Code/cpp/ccchat/server/StatusServer/src/redis_mgr.h \
+ /usr/include/hiredis/hiredis.h /usr/include/hiredis/read.h \
+ /usr/include/hiredis/sds.h /usr/include/hiredis/alloc.h \
+ /usr/include/c++/13/queue /usr/include/c++/13/bits/stl_queue.h \
+ /home/chen/Code/cpp/ccchat/server/StatusServer/src/singleton.h

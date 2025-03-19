@@ -15,7 +15,7 @@ StatusConPool::StatusConPool(size_t pool_size, const std::string& host, const st
 }
 
 StatusConPool::~StatusConPool() {
-    std::lock_guard lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     close();
     while(!m_connections.empty()) {
         m_connections.pop();
@@ -23,7 +23,7 @@ StatusConPool::~StatusConPool() {
 }
 
 std::unique_ptr<message::StatusService::Stub> StatusConPool::getConnection() {
-    std::unique_lock lock(m_mutex);
+    std::unique_lock<std::mutex> lock(m_mutex);
     m_cond.wait(lock, [this]() {
         if(m_stop) {
             return true;
@@ -39,7 +39,7 @@ std::unique_ptr<message::StatusService::Stub> StatusConPool::getConnection() {
 }
 
 void StatusConPool::returnConnection(std::unique_ptr<message::StatusService::Stub> stub) {
-    std::lock_guard lock(m_mutex);
+    std::lock_guard<std::mutex> lock(m_mutex);
     if(m_stop) {
         return;
     }

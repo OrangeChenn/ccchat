@@ -26,8 +26,15 @@ enum ErrorCodes {
     EMAIL_NOT_MATCH = 1007,
     PASSWD_UPDATE_ERROR = 1008,
     PASSWD_INVALID = 1009,
+    TOKEN_INVALID = 1010,
+    UID_INVALID = 1011,
 };
 
-const std::string CODEPREFIX = "code_";
+#define CODEPREFIX "code_"
+#define USERIPPREFIX  "uip_"
+#define USERTOKENPREFIX  "utoken_"
+#define IPCOUNTPREFIX  "ipcount_"
+#define USER_BASE_INFO "ubaseinfo_"
+#define LOGIN_COUNT  "logincount"
 
 #endif // __CONST_H__
