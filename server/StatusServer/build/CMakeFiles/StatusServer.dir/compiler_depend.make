@@ -6034,6 +6034,8 @@ CMakeFiles/StatusServer.dir/src/status_service_impl.cc.o: /home/chen/Code/cpp/cc
   /home/chen/Code/cpp/ccchat/server/StatusServer/src/const.h \
   /home/chen/Code/cpp/ccchat/server/StatusServer/src/message.grpc.pb.h \
   /home/chen/Code/cpp/ccchat/server/StatusServer/src/message.pb.h \
+  /home/chen/Code/cpp/ccchat/server/StatusServer/src/redis_mgr.h \
+  /home/chen/Code/cpp/ccchat/server/StatusServer/src/singleton.h \
   /home/chen/Code/cpp/ccchat/server/StatusServer/src/status_service_impl.h \
   /usr/include/alloca.h \
   /usr/include/arpa/inet.h \
@@ -7840,6 +7842,7 @@ CMakeFiles/StatusServer.dir/src/status_service_impl.cc.o: /home/chen/Code/cpp/cc
   /usr/include/c++/13/bits/stl_multiset.h \
   /usr/include/c++/13/bits/stl_numeric.h \
   /usr/include/c++/13/bits/stl_pair.h \
+  /usr/include/c++/13/bits/stl_queue.h \
   /usr/include/c++/13/bits/stl_raw_storage_iter.h \
   /usr/include/c++/13/bits/stl_relops.h \
   /usr/include/c++/13/bits/stl_set.h \
@@ -7916,6 +7919,7 @@ CMakeFiles/StatusServer.dir/src/status_service_impl.cc.o: /home/chen/Code/cpp/cc
   /usr/include/c++/13/pstl/glue_memory_defs.h \
   /usr/include/c++/13/pstl/glue_numeric_defs.h \
   /usr/include/c++/13/pstl/pstl_config.h \
+  /usr/include/c++/13/queue \
   /usr/include/c++/13/random \
   /usr/include/c++/13/ratio \
   /usr/include/c++/13/set \
@@ -7955,6 +7959,10 @@ CMakeFiles/StatusServer.dir/src/status_service_impl.cc.o: /home/chen/Code/cpp/cc
   /usr/include/fcntl.h \
   /usr/include/features-time64.h \
   /usr/include/features.h \
+  /usr/include/hiredis/alloc.h \
+  /usr/include/hiredis/hiredis.h \
+  /usr/include/hiredis/read.h \
+  /usr/include/hiredis/sds.h \
   /usr/include/json/allocator.h \
   /usr/include/json/config.h \
   /usr/include/json/forwards.h \
