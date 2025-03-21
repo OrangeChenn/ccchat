@@ -225,6 +225,8 @@ LogicSystem::LogicSystem() {
 
         // 查询StatusServer分配到合适的ChatServer连接信息
         auto reply = StatusGrpcClient::GetInstance()->GetChatServer(user_info.uid);
+        std::cout << "host: " << reply.host() << ", port: " 
+            << reply.port() << ", token: " << reply.token() << std::endl;
         if(reply.error()) {
             std::cout << "grpc get chat server failed, error is: " << reply.error() << std::endl;
             root["error"] = ErrorCodes::RPC_FAILED;
@@ -236,6 +238,7 @@ LogicSystem::LogicSystem() {
         root["user"] = name;
         root["uid"] = user_info.uid;
         root["token"] = reply.token();
+        root["port"] = reply.port();
         root["host"] = reply.host();
         beast::ostream(con->m_response.body()) << root.toStyledString();
     });

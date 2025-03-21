@@ -15,10 +15,18 @@ LogicSystem::LogicSystem() : m_stop(false) {
 }
 
 LogicSystem::~LogicSystem() {
+    m_stop = true;
+    m_cond.notify_one();
+    m_work_thread.join();
 }
 
-void LogicSystem::postMsgToQue(std::shared_ptr<Session> session, std::shared_ptr<RecvNode> recv_node) {
-
+void LogicSystem::postMsgToQue(std::shared_ptr<LogicNode> node) {
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_msg_que.push(node);
+    if(m_msg_que.size() >= 1) {
+        lock.unlock();
+        m_cond.notify_one();
+    }
 }
 
 void LogicSystem::logicHandler(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data) {
@@ -89,12 +97,47 @@ void LogicSystem::logicHandler(std::shared_ptr<Session> session, short msg_id, c
 }
 
 void LogicSystem::registerCallBacks() {
-    m_fun_callbacks[MSG_CHAT_LOGIN] = std::bind(&LogicSystem::logicHandler, this,
+    m_fun_callbacks[MSG_CHAT_LOGIN_RSP] = std::bind(&LogicSystem::logicHandler, this,
         std::placeholders::_1, std::placeholders::_2, std::placeholders::_3);
 }
 
 void LogicSystem::dealMsg() {
+    for(;;) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        while(m_msg_que.empty() && !m_stop) {
+            m_cond.wait(lock);
+        }
 
+        // 服务器如果关闭了，处理全部
+        if(m_stop) {
+            while(!m_msg_que.empty()) {
+                std::shared_ptr<LogicNode> node = m_msg_que.front();
+                short msg_id = node->m_recvnode->m_msg_id;
+                std::cout << "recv_msg id is " << msg_id << std::endl;
+                if(m_fun_callbacks.find(msg_id) == m_fun_callbacks.end()) {
+                    m_msg_que.pop();
+                    continue;
+                }
+                m_fun_callbacks[msg_id](node->m_session, msg_id,
+                    std::string(node->m_recvnode->m_data, node->m_recvnode->m_cur_len));
+                m_msg_que.pop();
+            }
+            break;
+        }
+
+        // 处理单条
+        std::shared_ptr<LogicNode> node = m_msg_que.front();
+        short msg_id = node->m_recvnode->m_msg_id;
+        std::cout << "recv_msg id is " << msg_id << std::endl;
+        if(m_fun_callbacks.find(msg_id) == m_fun_callbacks.end()) {
+            m_msg_que.pop();
+            std::cout << "msg id [" << msg_id << "] handler not found" << std::endl;
+            continue;
+        }
+        m_fun_callbacks[msg_id](node->m_session, msg_id,
+            std::string(node->m_recvnode->m_data, node->m_recvnode->m_cur_len));
+        m_msg_que.pop();
+    }
 }
 
 bool LogicSystem::getBaseInfo(const std::string& base_key, int uid, std::shared_ptr<UserInfo> &user_info) {

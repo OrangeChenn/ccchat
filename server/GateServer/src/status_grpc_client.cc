@@ -65,6 +65,7 @@ StatusGrpcClient::~StatusGrpcClient() {
 }
 
 message::GetChatServerRsp StatusGrpcClient::GetChatServer(int uid) {
+    std::cout << "uid: " << uid << ", StatusGrpcClient::GetChatServer" << std::endl;
     grpc::ClientContext context;
     message::GetChatServerReq req;
     message::GetChatServerRsp rsp;

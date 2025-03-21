@@ -35,12 +35,15 @@ grpc::Status StatusServiceImpl::GetChatServer(::grpc::ServerContext* context,
                                               ::message::GetChatServerRsp* response) {
 
     // ChatServer& server = m_servers[m_server_index++]; // 可优化，实现负载均衡
+    std::cout << "StatusServiceImpl::GetChatServer, " << request->uid() << std::endl;
     ChatServer server = getChatServer();
     response->set_host(server.host);
     response->set_port(server.port);
     response->set_error(ErrorCodes::SUCCESS);
     response->set_token(generate_unique_string());
     insertToken(request->uid(), response->token());
+    std::cout << "host: " << response->host() << ", port: " 
+        << response->port() << ", token: " << response->token() << std::endl;
     return grpc::Status::OK;
 }
 
@@ -95,6 +98,6 @@ ChatServer StatusServiceImpl::getChatServer() {
 
 void StatusServiceImpl::insertToken(int uid, std::string token) {
     std::string uid_str = std::to_string(uid);
-    std::string token_key = USERTOKENPREFIX + uid;
+    std::string token_key = USERTOKENPREFIX + uid_str;
     RedisMgr::GetInstance()->set(token_key, token);
 }

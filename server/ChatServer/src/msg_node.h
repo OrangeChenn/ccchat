@@ -1,6 +1,6 @@
 #ifndef __MSG_NODE_H__
 #define __MSG_NODE_H__
-
+#include "logic_system.h"
 class MsgNode {
 public:
     MsgNode(short max_len);
@@ -13,6 +13,7 @@ public:
 };
 
 class RecvNode : public MsgNode {
+friend class LogicSystem;
 public:
     RecvNode(short max_len, short msg_id);
 private:
@@ -20,6 +21,7 @@ private:
 };
 
 class SendNode : public MsgNode {
+friend class LogicSystem;
 public:
     SendNode(const char* msg, short max_len, short msg_id);
 private:

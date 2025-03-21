@@ -26,7 +26,7 @@ void Session::start() {
 
 void Session::asyncReadHead(int total_len) {
     std::shared_ptr<Session> self = shared_from_this();
-    asyncReadFull(total_len, [self, this](const boost::system::error_code& ec, std::size_t bytes_transfered) {
+    asyncReadFull(total_len, [self, this, total_len](const boost::system::error_code& ec, std::size_t bytes_transfered) {
         try {
             // 读取头部信息错误
             if(ec) {
@@ -37,9 +37,9 @@ void Session::asyncReadHead(int total_len) {
             }
             
             // 头部信息不匹配
-            if(bytes_transfered < MAX_LENGTH) {
+            if(bytes_transfered < (std::size_t)total_len) {
                 std::cout << "read length not match, read[" << bytes_transfered << "], total["
-                          << MAX_LENGTH << "]";
+                          << total_len << "]";
                 this->close();
                 this->m_cserver->clearSession(this->m_session_id);
                 return;
@@ -131,7 +131,7 @@ void Session::asyncReadBody(int total_len) {
             this->m_recv_msg_node->m_data[this->m_recv_msg_node->m_total_len] = '\0';
             std::cout << "recive data is: " << this->m_recv_msg_node->m_data << std::endl;
 
-            LogicSystem::GetInstance()->postMsgToQue(shared_from_this(), this->m_recv_msg_node);
+            LogicSystem::GetInstance()->postMsgToQue(std::make_shared<LogicNode>(shared_from_this(), this->m_recv_msg_node));
             this->asyncReadHead(HEAD_TOTAL_LEN);
         });
     } catch(const std::exception& e) {
@@ -139,8 +139,58 @@ void Session::asyncReadBody(int total_len) {
     }
 }
 
-void Session::send(const std::string& msg_data, short msg_id) {
+void Session::send(char* msg, short msg_len, short msg_id) {
+    std::lock_guard<std::mutex> lock(m_send_mutex);
+    int send_que_size = m_send_que.size();
+    if(send_que_size > MAX_SENDQUE) {
+        std::cout << "Session: " << m_session_id << " send que fulled, size is "
+                  << MAX_SENDQUE << std::endl;
+        return;
+    }
+    m_send_que.push(std::make_shared<SendNode>(msg, msg_len, msg_id));
+    if(send_que_size > 0) {
+        return;
+    }
+    auto& send_node = m_send_que.front();
+    boost::asio::async_write(m_socket, boost::asio::buffer(send_node->m_data, send_node->m_total_len),
+                std::bind(&Session::handlerWrite, this, std::placeholders::_1, shared_from_this()));
+}
 
+void Session::send(const std::string& msg_data, short msg_id) {
+    std::lock_guard<std::mutex> lock(m_send_mutex);
+    int send_que_size = m_send_que.size();
+    if(send_que_size > MAX_SENDQUE) {
+        std::cout << "Session: " << m_session_id << " send que fulled, size is "
+                  << MAX_SENDQUE << std::endl;
+        return;
+    }
+    m_send_que.push(std::make_shared<SendNode>(msg_data.c_str(), msg_data.size(), msg_id));
+    if(send_que_size > 0) {
+        return;
+    }
+    auto& send_node = m_send_que.front();
+    boost::asio::async_write(m_socket, boost::asio::buffer(send_node->m_data, send_node->m_total_len),
+                std::bind(&Session::handlerWrite, this, std::placeholders::_1, shared_from_this()));
+}
+
+void Session::handlerWrite(const boost::system::error_code& error, std::shared_ptr<Session> shared_self) {
+    try {
+        if(!error) {
+            std::lock_guard<std::mutex> lock(m_send_mutex);
+            m_send_que.pop();
+            if(!m_send_que.empty()) {
+                auto& send_node = m_send_que.front();
+                boost::asio::async_write(m_socket, boost::asio::buffer(send_node->m_data, send_node->m_total_len),
+                    std::bind(&Session::handlerWrite, this, std::placeholders::_1, shared_from_this()));
+            }
+        } else {
+            std::cerr << "handle write failed, error is " << error.what() << std::endl;
+            close();
+            m_cserver->clearSession(m_session_id);
+        }
+    } catch(const std::exception& e) {
+        std::cerr << "Exception code: " << e.what() << std::endl;
+    }
 }
 
 void Session::setUserUid(int uid) {
@@ -163,3 +213,6 @@ std::string Session::getSessionId() {
 tcp::socket& Session::getSocket() {
     return m_socket;
 }
+
+LogicNode::LogicNode(std::shared_ptr<Session> session, std::shared_ptr<RecvNode> recvnode)
+        : m_session(session), m_recvnode(recvnode){}
