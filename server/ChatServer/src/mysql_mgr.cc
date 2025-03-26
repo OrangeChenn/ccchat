@@ -28,6 +28,14 @@ bool MysqlMgr::updatePasswd(const std::string& name, const std::string& passwd) 
     return m_dao.updatePasswd(name, passwd);
 }
 
+bool MysqlMgr::addFriendApply(int uid, int touid) {
+    return m_dao.addFriendApply(uid, touid);
+}
+
+bool MysqlMgr::getApplyList(int touid, std::vector<std::shared_ptr<ApplyInfo>>& list, int begin, int limit) {
+    return m_dao.getApplyList(touid, list, begin, limit);
+}
+
 std::shared_ptr<UserInfo> MysqlMgr::getUser(int uid) {
     return m_dao.getUser(uid);
 }

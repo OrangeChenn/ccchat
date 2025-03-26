@@ -26,6 +26,7 @@ enum ErrorCodes {
     PASSWD_INVALID = 1009,
     TOKEN_INVALID = 1010,
     UID_INVALID = 1011,
+    SERVER_IP_INVALID = 1012,
 };
 
 #define MAX_LENGTH  1024*2

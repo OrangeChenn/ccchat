@@ -2,6 +2,8 @@
 #define __LOGICSYSTEM_H__
 #include <condition_variable>
 #include <functional>
+#include <json/json.h>
+#include <json/value.h>
 #include <map>
 #include <memory>
 #include <mutex>
@@ -21,14 +23,21 @@ public:
     ~LogicSystem();
 
     void postMsgToQue(std::shared_ptr<LogicNode> node);
-    void logicHandler(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data);
 private:
     friend class Singleton<LogicSystem>;
     LogicSystem();
 
     void registerCallBacks();
     void dealMsg();
+    void logicHandler(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data);
+    void searchInfo(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data);
+    void addFriendApply(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data);
+
+    void getUserByUid(const std::string& uid_str, Json::Value& rtvalue);
+    void getUserByName(const std::string& name, Json::Value& rtvalue);
+    bool isPureDigit(const std::string& str);
     bool getBaseInfo(const std::string& base_key, int uid, std::shared_ptr<UserInfo> &user_info);
+    bool getFriendApplyInfo(int to_uid, std::vector<std::shared_ptr<ApplyInfo>> &list);
 
 private:
     std::thread m_work_thread;

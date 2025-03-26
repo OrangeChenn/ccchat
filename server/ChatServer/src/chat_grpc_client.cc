@@ -1,4 +1,5 @@
 #include "chat_grpc_client.h"
+#include "const.h"
 
 ChatConPool::ChatConPool(size_t pool_size, const std::string& host, const std::string& port)
     : m_stop(false)
@@ -75,6 +76,28 @@ ChatGrpcClient::ChatGrpcClient() {
 message::AddFriendRsp ChatGrpcClient::NotifyAddFriend(const std::string& server_ip,
                                                     const message::AddFriendReq& req) {
     message::AddFriendRsp rsp;
+    grpc::ClientContext context;
+    rsp.set_applyuid(req.applyuid());
+    rsp.set_touid(req.touid());
+    auto find_iter = m_pools.find(server_ip);
+    // 目标服务器不存在
+    if(find_iter == m_pools.end()) {
+        rsp.set_error(ErrorCodes::SERVER_IP_INVALID);
+        return rsp;
+    }
+
+    auto& pool = find_iter->second;
+    auto stub = pool->getConnection();
+    Defer defer([&pool, &stub]() {
+        pool->returnConnection(std::move(stub));
+    });
+    grpc::Status status = stub->NotifyAddFriend(&context, req, &rsp);
+    if(!status.ok()) {
+        rsp.set_error(ErrorCodes::RPC_FAILED);
+        return rsp;
+    }
+
+    rsp.set_error(ErrorCodes::SUCCESS);
     return rsp;
 }
 

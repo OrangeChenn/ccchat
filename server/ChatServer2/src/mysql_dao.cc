@@ -226,6 +226,76 @@ bool MysqlDao::updatePasswd(const std::string& name, const std::string& passwd) 
     }
 }
 
+bool MysqlDao::addFriendApply(int uid, int touid) {
+    std::unique_ptr<sql::Connection> con = m_pool->getConnection();
+    if(con == nullptr) {
+        return false;
+    }
+    
+    Defer defer([this, &con]() {
+        this->m_pool->returnConnection(std::move(con));
+    });
+
+    try {
+        std::unique_ptr<sql::PreparedStatement> pstmd(con->prepareStatement(
+            "INSERT INTO friend_apply (from_uid, to_uid) values(?,?)"
+            "ON DUPLICATE KEY UPDATE from_uid = from_uid, to_uid = to_uid"
+        ));
+        pstmd->setInt(1, uid);
+        pstmd->setInt(2, touid);
+
+        int row_affected = pstmd->executeUpdate();
+        if(row_affected < 0) {
+            return false;
+        }
+        return true;
+    } catch(const sql::SQLException& e) {
+        std::cerr << "SQLException: " << e.what();
+        std::cerr << " (MySQL error code: " << e.getErrorCode();
+        std::cerr << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        return false;
+    }
+    return true;
+}
+
+bool MysqlDao::getApplyList(int touid, std::vector<std::shared_ptr<ApplyInfo>>& list, int begin, int limit) {
+    auto con = m_pool->getConnection();
+    if(con == nullptr) {
+        return false;
+    }
+
+    Defer defer([this, &con]() {
+        this->m_pool->returnConnection(std::move(con));
+    });
+
+    try {
+        std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement("select apply.from_uid, apply.status, user.name, "
+                        "user.nick, user.sex from friend_apply as apply join user on apply.from_uid = user.uid where apply.to_uid = ? "
+                                                    "and apply.id > ? order by apply.id ASC LIMIT ? "));
+
+        pstmt->setInt(1, touid);
+        pstmt->setInt(2, begin);
+        pstmt->setInt(3, limit);
+
+        std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+        while(res->next()) {
+            auto name = res->getString("name");
+            auto uid = res->getInt("from_uid");
+            auto status = res->getInt("status");
+            auto nick = res->getString("nick");
+            auto sex = res->getInt("sex");
+            auto apply_ptr = std::make_shared<ApplyInfo>(uid, name, "", "", nick, sex, status);
+            list.push_back(apply_ptr);
+        }
+        return true;
+    } catch(const sql::SQLException& e) {
+        std::cerr << "SQLException: " << e.what();
+        std::cerr << " (MySQL error code: " << e.getErrorCode();
+        std::cerr << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        return false;
+    }
+}
+
 std::shared_ptr<UserInfo> MysqlDao::getUser(int uid) {
     std::unique_ptr<sql::Connection> con = m_pool->getConnection();
     if(nullptr == con) {
@@ -247,6 +317,9 @@ std::shared_ptr<UserInfo> MysqlDao::getUser(int uid) {
             user_info->name = res->getString("name");
             user_info->uid = res->getInt("uid");
             user_info->passwd = res->getString("passwd");
+            user_info->nick = res->getString("nick");
+            user_info->desc = res->getString("desc");
+            user_info->sex = res->getInt("sex");
             break;
         }
         return user_info;
@@ -278,6 +351,9 @@ std::shared_ptr<UserInfo> MysqlDao::getUser(const std::string& name) {
             user_info->name = res->getString("name");
             user_info->uid = res->getInt("uid");
             user_info->passwd = res->getString("passwd");
+            user_info->nick = res->getString("nick");
+            user_info->desc = res->getString("desc");
+            user_info->sex = res->getInt("sex");
             break;
         }
         return user_info;

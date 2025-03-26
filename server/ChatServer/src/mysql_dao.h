@@ -44,6 +44,8 @@ public:
     bool checkPasswdByEmail(const std::string& email, const std::string& passwd, UserInfo& user_info);
     bool checkPasswdByName(const std::string& name, const std::string& passwd, UserInfo& user_info);
     bool updatePasswd(const std::string& name, const std::string& passwd);
+    bool addFriendApply(int uid, int touid);
+    bool getApplyList(int touid, std::vector<std::shared_ptr<ApplyInfo>>& list, int begin, int limit);
     std::shared_ptr<UserInfo> getUser(int uid);
     std::shared_ptr<UserInfo> getUser(const std::string& name);
 private:
