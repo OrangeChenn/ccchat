@@ -258,6 +258,68 @@ bool MysqlDao::addFriendApply(int uid, int touid) {
     return true;
 }
 
+bool MysqlDao::authFriendApply(int uid, int touid) {
+    auto con = m_pool->getConnection();
+    if(con == nullptr) {
+        return false;
+    }
+
+    Defer defer([this, &con]() {
+        this->m_pool->returnConnection(std::move(con));
+    });
+
+    try {
+        std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement("UPDATE friend_apply SET status = 1 "
+                                            "WHERE from_id = ? AND to_uid = ?"));
+        pstmt->setInt(1, uid);
+        pstmt->setInt(2, touid);
+
+        // std::unique_ptr<sql::ResultSet> res(pstmt->executeUpdate());
+        int row = pstmt->executeUpdate();
+        if(row < 0) {
+            return false;
+        }
+
+        return true;
+    } catch(const sql::SQLException& e) {
+        std::cerr << "SQLException: " << e.what();
+        std::cerr << " (MySQL error code: " << e.getErrorCode();
+        std::cerr << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        return false;
+    }
+}
+
+bool MysqlDao::addFriend(const int& from, const int& to, const std::string& bak_name) {
+    auto con = m_pool->getConnection();
+    if(con == nullptr) {
+        return false;
+    }
+
+    Defer defer([this, &con]() {
+        this->m_pool->returnConnection(std::move(con));
+    });
+
+    try {
+        std::unique_ptr<sql::PreparedStatement> pstmt(con->prepareStatement("INSERT IGNAORE INTO friend(self_id, friend_id, bak) "
+                                                                            "VALUES (?, ?, ?) "));
+
+        pstmt->setInt(1, from);
+        pstmt->setInt(2, to);
+        pstmt->setString(3, bak_name);
+        int row = pstmt->executeUpdate();
+        if(row < 0) {
+            return false;
+        }
+
+        return true;
+    } catch(const sql::SQLException& e) {
+        std::cerr << "SQLException: " << e.what();
+        std::cerr << " (MySQL error code: " << e.getErrorCode();
+        std::cerr << ", SQLState: " << e.getSQLState() << " )" << std::endl;
+        return false;
+    }
+}
+
 bool MysqlDao::getApplyList(int touid, std::vector<std::shared_ptr<ApplyInfo>>& list, int begin, int limit) {
     auto con = m_pool->getConnection();
     if(con == nullptr) {

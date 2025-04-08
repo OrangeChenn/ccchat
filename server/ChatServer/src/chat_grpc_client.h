@@ -37,7 +37,7 @@ public:
 
     message::AddFriendRsp NotifyAddFriend(const std::string& server_ip, const message::AddFriendReq& req);
     message::AuthFriendRsp NotifyAuthFriend(const std::string& server_ip, const message::AuthFriendReq& req);
-    bool getBaseInfo(const std::string& base_key, int uid, std::shared_ptr<UserInfo>& user_info);
+    bool getBaseInfo(const std::string& base_key, int uid, std::shared_ptr<UserInfo>& userinfo);
     message::TextChatMsgRsp NotifyTextChatMsg(const std::string& server_ip, const message::TextChatMsgReq& req, const Json::Value& rtvalue);
 
 private:

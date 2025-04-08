@@ -32,12 +32,15 @@ private:
     void logicHandler(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data);
     void searchInfo(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data);
     void addFriendApply(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data);
+    void authFriendApply(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data);
+    void dealChatTextMsg(std::shared_ptr<Session> session, short msg_id, const std::string& msg_data);
 
     void getUserByUid(const std::string& uid_str, Json::Value& rtvalue);
     void getUserByName(const std::string& name, Json::Value& rtvalue);
     bool isPureDigit(const std::string& str);
     bool getBaseInfo(const std::string& base_key, int uid, std::shared_ptr<UserInfo> &user_info);
-    bool getFriendApplyInfo(int to_uid, std::vector<std::shared_ptr<ApplyInfo>> &list);
+    bool getFriendApplyInfo(int to_uid, std::vector<std::shared_ptr<ApplyInfo>>& list);
+    bool getFriendList(int uid, std::vector<std::shared_ptr<UserInfo>>& list);
 
 private:
     std::thread m_work_thread;
